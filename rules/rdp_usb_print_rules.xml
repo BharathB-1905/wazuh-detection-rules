@@ -1,0 +1,114 @@
+<group name="rdp_usb_print_detection,windows,">
+
+  <rule id="200700" level="9">
+    <if_sid>60106</if_sid>
+    <field name="win.system.eventID">^4624$</field>
+    <field name="win.eventdata.logonType">^10$</field>
+    <description>RDP Successful logon | User: $(win.eventdata.targetUserName) | From: $(win.eventdata.ipAddress)</description>
+    <group>rdp_logon_success,t1021.001,</group>
+    <mitre><id>T1021.001</id></mitre>
+  </rule>
+
+  <rule id="200701" level="9">
+    <if_sid>60105</if_sid>
+    <field name="win.system.eventID">^4625$</field>
+    <field name="win.eventdata.logonType">^10$</field>
+    <description>RDP Failed logon attempt | User: $(win.eventdata.targetUserName) | From: $(win.eventdata.ipAddress)</description>
+    <group>rdp_logon_failed,t1021.001,t1110,</group>
+    <mitre><id>T1021.001</id><id>T1110</id></mitre>
+  </rule>
+
+  <rule id="200703" level="9">
+    <if_sid>200700</if_sid>
+    <time>9 pm - 6 am</time>
+    <description>RDP logon outside business hours | User: $(win.eventdata.targetUserName) | From: $(win.eventdata.ipAddress)</description>
+    <group>rdp_after_hours,t1021.001,</group>
+    <mitre><id>T1021.001</id></mitre>
+  </rule>
+
+  <rule id="200704" level="9">
+    <if_sid>200700</if_sid>
+    <field name="win.eventdata.ipAddress" type="pcre2">^192\.168\.|^10\.|^172\.(1[6-9]|2[0-9]|3[0-1])\.</field>
+    <description>RDP lateral movement - internal IP logon | User: $(win.eventdata.targetUserName) | From: $(win.eventdata.ipAddress)</description>
+    <group>rdp_lateral_movement,t1021.001,</group>
+    <mitre><id>T1021.001</id></mitre>
+  </rule>
+
+  <rule id="200706" level="9">
+    <if_sid>200700</if_sid>
+    <field name="win.eventdata.targetUserName" type="pcre2">(?i)^(admin|administrator|administrador)$</field>
+    <description>RDP logon using built-in admin account | User: $(win.eventdata.targetUserName) | From: $(win.eventdata.ipAddress)</description>
+    <group>rdp_admin_logon,t1021.001,t1078.003,</group>
+    <mitre><id>T1021.001</id><id>T1078.003</id></mitre>
+  </rule>
+
+  <rule id="200707" level="9">
+    <if_group>windows</if_group>
+    <field name="win.system.providerName" type="pcre2">(?i)^Microsoft-Windows-DriverFrameworks-UserMode$</field>
+    <field name="win.system.eventID">^2003$</field>
+    <description>USB device connected | Device: $(win.eventdata.deviceInstanceId)</description>
+    <group>usb_device_connected,t1091,t1052.001,</group>
+    <mitre><id>T1091</id><id>T1052.001</id></mitre>
+  </rule>
+
+  <rule id="200708" level="7">
+    <if_group>windows</if_group>
+    <field name="win.system.providerName" type="pcre2">(?i)^Microsoft-Windows-DriverFrameworks-UserMode$</field>
+    <field name="win.system.eventID">^2100$</field>
+    <description>USB device disconnected | Device: $(win.eventdata.deviceInstanceId)</description>
+    <group>usb_device_disconnected,t1052.001,</group>
+    <mitre><id>T1052.001</id></mitre>
+  </rule>
+
+  <rule id="200709" level="9">
+    <if_group>windows</if_group>
+    <field name="win.system.providerName" type="pcre2">(?i)^Microsoft-Windows-Kernel-PnP$</field>
+    <field name="win.system.eventID">^20001$</field>
+    <description>New USB device installed for first time | Device: $(win.eventdata.deviceInstanceId)</description>
+    <group>usb_new_device,t1200,</group>
+    <mitre><id>T1200</id></mitre>
+  </rule>
+
+  <rule id="200710" level="12">
+    <if_group>sysmon_event1</if_group>
+    <field name="win.eventdata.image" type="pcre2">(?i)^[d-z]:\\(?!Windows|Program Files|Users\\[^\\]+\\AppData).*\.(exe|bat|cmd|ps1|vbs|msi)$</field>
+    <description>CRITICAL: Executable launched from removable drive | File: $(win.eventdata.image) | User: $(win.eventdata.user)</description>
+    <group>usb_exec_removable,t1091,t1204.002,</group>
+    <mitre><id>T1091</id><id>T1204.002</id></mitre>
+  </rule>
+
+  <rule id="200711" level="12">
+    <if_group>sysmon_event1</if_group>
+    <field name="win.eventdata.commandLine" type="pcre2">(?i)[d-z]:\\.+\.(ps1|bat|cmd|vbs|js|hta)</field>
+    <field name="win.eventdata.image" type="pcre2" negate="yes">(?i)^C:\\</field>
+    <description>CRITICAL: Script executed from removable drive | CMD: $(win.eventdata.commandLine) | User: $(win.eventdata.user)</description>
+    <group>usb_script_exec,t1091,t1059,</group>
+    <mitre><id>T1091</id><id>T1059</id></mitre>
+  </rule>
+
+  <rule id="200712" level="12">
+    <if_group>sysmon_event1</if_group>
+    <field name="win.eventdata.parentImage" type="pcre2">(?i)\\spoolsv\.exe$</field>
+    <description>CRITICAL: PrintNightmare - spoolsv.exe spawned child process | Child: $(win.eventdata.image) | User: $(win.eventdata.user)</description>
+    <group>printnightmare,t1068,t1547,</group>
+    <mitre><id>T1068</id><id>T1547</id></mitre>
+  </rule>
+
+  <rule id="200713" level="12">
+    <if_group>sysmon_event1</if_group>
+    <field name="win.eventdata.image" type="pcre2">(?i)\\Windows\\System32\\spool\\drivers\\.+\.dll$</field>
+    <description>CRITICAL: PrintNightmare - DLL loaded from spool drivers path | DLL: $(win.eventdata.image) | User: $(win.eventdata.user)</description>
+    <group>printnightmare_dll,t1068,</group>
+    <mitre><id>T1068</id></mitre>
+  </rule>
+
+  <rule id="200714" level="12">
+    <if_group>sysmon_event1</if_group>
+    <field name="win.eventdata.parentImage" type="pcre2">(?i)\\spoolsv\.exe$</field>
+    <field name="win.eventdata.image" type="pcre2">(?i)\\(cmd|powershell|pwsh|wscript|cscript|mshta)\.exe$</field>
+    <description>CRITICAL: PrintNightmare RCE - spoolsv.exe spawned shell | Shell: $(win.eventdata.image) | User: $(win.eventdata.user)</description>
+    <group>printnightmare_rce,t1068,t1059,</group>
+    <mitre><id>T1068</id><id>T1059</id></mitre>
+  </rule>
+
+</group>

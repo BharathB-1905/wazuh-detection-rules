@@ -1,0 +1,94 @@
+<group name="network_detection,sysmon,">
+
+  <!-- RULE 0: Built-in OS tools downloading payloads (LOLBins) -->
+  <rule id="200200" level="10">
+    <if_group>sysmon_event3</if_group>
+    <field name="win.eventdata.image" type="pcre2">(?i)\\certutil\.exe$|\\bitsadmin\.exe$|\\curl\.exe$|\\wget\.exe$</field>
+    <description>LOLBin network connection (Payload download) | Process: $(win.eventdata.image) | Dest: $(win.eventdata.destinationIp):$(win.eventdata.destinationPort)</description>
+    <group>network_download,t1105,</group>
+    <mitre><id>T1105</id></mitre>
+  </rule>
+
+  <!-- RULE 1: Shells and scripting engines connecting to the network -->
+  <rule id="200201" level="12">
+    <if_group>sysmon_event3</if_group>
+    <field name="win.eventdata.image" type="pcre2">(?i)\\cmd\.exe$|\\powershell\.exe$|\\pwsh\.exe$|\\wscript\.exe$|\\cscript\.exe$|\\mshta\.exe$|\\wmic\.exe$</field>
+    <description>CRITICAL: Scripting engine initiated network connection | Process: $(win.eventdata.image) | Dest: $(win.eventdata.destinationIp):$(win.eventdata.destinationPort)</description>
+    <group>network_shell,t1059,</group>
+    <mitre><id>T1059</id><id>T1071</id></mitre>
+  </rule>
+
+  <!-- RULE 2: Office Applications making network connections (Macro C2) -->
+  <rule id="200202" level="12">
+    <if_group>sysmon_event3</if_group>
+    <field name="win.eventdata.image" type="pcre2">(?i)\\winword\.exe$|\\excel\.exe$|\\powerpnt\.exe$|\\msaccess\.exe$</field>
+    <description>CRITICAL: Office Application initiated network connection | Process: $(win.eventdata.image) | Dest: $(win.eventdata.destinationIp):$(win.eventdata.destinationPort)</description>
+    <group>network_office_c2,t1566,</group>
+    <mitre><id>T1566</id><id>T1071</id></mitre>
+  </rule>
+
+  <!-- RULE 3: System Execution Binaries bypassing proxies (AppLocker Bypass) -->
+  <rule id="200203" level="10">
+    <if_group>sysmon_event3</if_group>
+    <field name="win.eventdata.image" type="pcre2">(?i)\\rundll32\.exe$|\\regsvr32\.exe$|\\msbuild\.exe$|\\installutil\.exe$</field>
+    <description>System proxy binary initiated network connection | Process: $(win.eventdata.image) | Dest: $(win.eventdata.destinationIp):$(win.eventdata.destinationPort)</description>
+    <group>network_proxy_execution,t1218,</group>
+    <mitre><id>T1218</id></mitre>
+  </rule>
+
+  <!-- RULE 4: Suspicious Reverse Shell / C2 Ports -->
+  <rule id="200204" level="12">
+    <if_group>sysmon_event3</if_group>
+    <field name="win.eventdata.destinationPort" type="pcre2">^4444$|^1337$|^31337$|^8888$|^4443$|^9999$</field>
+    <description>CRITICAL: Connection to known reverse shell/C2 port | Process: $(win.eventdata.image) | Port: $(win.eventdata.destinationPort)</description>
+    <group>network_reverse_shell,t1095,</group>
+    <mitre><id>T1095</id></mitre>
+  </rule>
+
+  <!-- RULE 5: Known Crypto-Mining Ports -->
+  <rule id="200205" level="9">
+    <if_group>sysmon_event3</if_group>
+    <field name="win.eventdata.destinationPort" type="pcre2">^3333$|^14444$|^7777$|^45560$|^45600$</field>
+    <description>Connection to potential cryptomining port | Process: $(win.eventdata.image) | Port: $(win.eventdata.destinationPort)</description>
+    <group>network_crypto_mining,t1496,</group>
+    <mitre><id>T1496</id></mitre>
+  </rule>
+
+  <!-- RULE 6: Lateral Movement Ports (RDP/WinRM/SMB) from abnormal processes -->
+  <rule id="200206" level="8">
+    <if_group>sysmon_event3</if_group>
+    <field name="win.eventdata.destinationPort" type="pcre2">^3389$|^5985$|^5986$|^445$</field>
+    <field name="win.eventdata.image" type="pcre2" negate="yes">(?i)\\svchost\.exe$|^System$|\\mstsc\.exe$</field>
+    <description>Suspicious Lateral Movement port connection | Process: $(win.eventdata.image) | Port: $(win.eventdata.destinationPort)</description>
+    <group>network_lateral_movement,t1021,</group>
+    <mitre><id>T1021</id></mitre>
+  </rule>
+
+  <!-- RULE 7: Unencrypted / Cleartext protocols (Telnet, FTP, TFTP) -->
+  <rule id="200207" level="7">
+    <if_group>sysmon_event3</if_group>
+    <field name="win.eventdata.destinationPort" type="pcre2">^21$|^23$|^69$</field>
+    <description>Cleartext protocol (FTP/Telnet/TFTP) network connection | Process: $(win.eventdata.image) | Port: $(win.eventdata.destinationPort)</description>
+    <group>network_cleartext,t1048,</group>
+    <mitre><id>T1048</id></mitre>
+  </rule>
+
+  <!-- RULE 8: TOR / Anonymity Network Ports -->
+  <rule id="200208" level="10">
+    <if_group>sysmon_event3</if_group>
+    <field name="win.eventdata.destinationPort" type="pcre2">^9001$|^9030$|^9050$|^9051$|^1080$</field>
+    <description>Connection to TOR/Proxy port | Process: $(win.eventdata.image) | Port: $(win.eventdata.destinationPort)</description>
+    <group>network_anonymity,t1090,</group>
+    <mitre><id>T1090</id></mitre>
+  </rule>
+
+  <!-- RULE 9: Reconnaissance Tools making external connections -->
+  <rule id="200209" level="9">
+    <if_group>sysmon_event3</if_group>
+    <field name="win.eventdata.image" type="pcre2">(?i)\\whoami\.exe$|\\net\.exe$|\\net1\.exe$|\\ipconfig\.exe$|\\systeminfo\.exe$|\\route\.exe$</field>
+    <description>Reconnaissance tool initiated network connection | Process: $(win.eventdata.image) | Dest: $(win.eventdata.destinationIp):$(win.eventdata.destinationPort)</description>
+    <group>network_recon,t1049,</group>
+    <mitre><id>T1049</id></mitre>
+  </rule>
+
+</group>

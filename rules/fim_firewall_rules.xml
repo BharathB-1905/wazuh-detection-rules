@@ -1,0 +1,160 @@
+<group name="fim_firewall_detection,windows,">
+
+  <rule id="200600" level="12">
+    <if_sid>550</if_sid>
+    <field name="file" type="pcre2">(?i)drivers\\etc\\hosts$</field>
+    <description>CRITICAL: Windows hosts file modified | File: $(file) | User: $(uname)</description>
+    <group>hosts_file_modified,t1565.001,t1071,</group>
+    <mitre><id>T1565.001</id><id>T1071</id></mitre>
+  </rule>
+
+  <rule id="200601" level="12">
+    <if_sid>554</if_sid>
+    <field name="file" type="pcre2">(?i)drivers\\etc\\hosts$</field>
+    <description>CRITICAL: Windows hosts file recreated/replaced | File: $(file) | User: $(uname)</description>
+    <group>hosts_file_created,t1565.001,t1071,</group>
+    <mitre><id>T1565.001</id><id>T1071</id></mitre>
+  </rule>
+
+  <rule id="200602" level="9">
+    <if_group>windows</if_group>
+    <field name="win.system.eventID">^4946$</field>
+    <description>Windows Firewall inbound rule added | Rule: $(win.eventdata.ruleName) | Profile: $(win.eventdata.profileChanged)</description>
+    <group>firewall_rule_added,t1562.004,</group>
+    <mitre><id>T1562.004</id></mitre>
+  </rule>
+
+  <rule id="200603" level="9">
+    <if_group>windows</if_group>
+    <field name="win.system.eventID">^4947$</field>
+    <description>Windows Firewall rule deleted | Rule: $(win.eventdata.ruleName) | Profile: $(win.eventdata.profileChanged)</description>
+    <group>firewall_rule_deleted,t1562.004,</group>
+    <mitre><id>T1562.004</id></mitre>
+  </rule>
+
+  <rule id="200604" level="12">
+    <if_group>windows</if_group>
+    <field name="win.system.eventID">^4950$</field>
+    <description>CRITICAL: Windows Firewall profile setting changed | Profile: $(win.eventdata.profileChanged) | Setting: $(win.eventdata.settingType)</description>
+    <group>firewall_profile_changed,t1562.004,</group>
+    <mitre><id>T1562.004</id></mitre>
+  </rule>
+
+  <rule id="200605" level="7">
+    <if_sid>550</if_sid>
+    <description>FIM: Monitored file modified | File: $(file) | User: $(uname)</description>
+    <group>fim_file_modified,t1565.001,</group>
+    <mitre><id>T1565.001</id></mitre>
+  </rule>
+
+  <rule id="200606" level="7">
+    <if_sid>554</if_sid>
+    <description>FIM: New file added to monitored path | File: $(file) | User: $(uname)</description>
+    <group>fim_file_added,t1105,</group>
+    <mitre><id>T1105</id></mitre>
+  </rule>
+
+  <rule id="200607" level="12">
+    <if_sid>554</if_sid>
+    <field name="file" type="pcre2">(?i)\\Windows\\System32\\.+\.(exe|dll|sys|bat|cmd|ps1|vbs)$</field>
+    <description>CRITICAL: New executable dropped in System32 | File: $(file) | User: $(uname)</description>
+    <group>fim_exe_system32,t1105,t1036,</group>
+    <mitre><id>T1105</id><id>T1036</id></mitre>
+  </rule>
+
+  <rule id="200608" level="12">
+    <if_sid>554</if_sid>
+    <field name="file" type="pcre2">(?i)\\Windows\\SysWOW64\\.+\.(exe|dll|sys|bat|cmd|ps1|vbs)$</field>
+    <description>CRITICAL: New executable dropped in SysWOW64 | File: $(file) | User: $(uname)</description>
+    <group>fim_exe_syswow64,t1105,t1036,</group>
+    <mitre><id>T1105</id><id>T1036</id></mitre>
+  </rule>
+
+  <rule id="200609" level="12">
+    <if_sid>554</if_sid>
+    <field name="file" type="pcre2">(?i)\\Start Menu\\Programs\\Startup\\.+\.(exe|bat|cmd|ps1|vbs|lnk)$</field>
+    <description>CRITICAL: File dropped in Startup folder (persistence) | File: $(file) | User: $(uname)</description>
+    <group>fim_startup_drop,t1547.001,</group>
+    <mitre><id>T1547.001</id></mitre>
+  </rule>
+
+  <rule id="200610" level="9">
+    <if_sid>554</if_sid>
+    <field name="file" type="pcre2">(?i)\\(Temp|AppData|Local\\Temp)\\.+\.(ps1|bat|cmd|vbs|js|wsh|hta)$</field>
+    <description>Script file created in Temp/AppData | File: $(file) | User: $(uname)</description>
+    <group>fim_script_temp,t1059,</group>
+    <mitre><id>T1059</id></mitre>
+  </rule>
+
+  <rule id="200611" level="9">
+    <if_sid>554</if_sid>
+    <field name="file" type="pcre2">(?i)\\(Users|Temp|AppData|Downloads|Public)\\.+\.dll$</field>
+    <description>DLL dropped in non-standard user path (possible hijacking) | File: $(file) | User: $(uname)</description>
+    <group>fim_dll_hijack,t1574.001,</group>
+    <mitre><id>T1574.001</id></mitre>
+  </rule>
+
+  <rule id="200612" level="9">
+    <if_sid>554</if_sid>
+    <field name="file" type="pcre2">(?i)D:\\PRIVATE\\DOCS\\.+</field>
+    <description>New file added to monitored PRIVATE DOCS folder | File: $(file) | User: $(uname)</description>
+    <group>fim_private_docs_add,t1565.001,</group>
+    <mitre><id>T1565.001</id></mitre>
+  </rule>
+
+  <rule id="200613" level="7">
+    <if_sid>550</if_sid>
+    <field name="file" type="pcre2">(?i)D:\\PRIVATE\\DOCS\\.+</field>
+    <description>File modified in monitored PRIVATE DOCS folder | File: $(file) | User: $(uname)</description>
+    <group>fim_private_docs_mod,t1565.001,</group>
+    <mitre><id>T1565.001</id></mitre>
+  </rule>
+
+  <rule id="200614" level="9">
+    <if_sid>554</if_sid>
+    <field name="file" type="pcre2">(?i)\\Downloads\\.+\.(exe|msi|dll|bat|cmd|ps1|vbs|jar)$</field>
+    <description>Executable downloaded to Downloads folder | File: $(file) | User: $(uname)</description>
+    <group>fim_downloads_exe,t1105,</group>
+    <mitre><id>T1105</id></mitre>
+  </rule>
+
+  <rule id="200615" level="9">
+    <if_sid>550</if_sid>
+    <field name="file" type="pcre2">(?i)\\Windows\\System32\\config\\(SAM|SYSTEM|SECURITY|SOFTWARE)$</field>
+    <description>CRITICAL: Windows registry hive file modified | File: $(file) | User: $(uname)</description>
+    <group>fim_registry_hive,t1003.002,</group>
+    <mitre><id>T1003.002</id></mitre>
+  </rule>
+
+  <rule id="200616" level="9">
+    <if_sid>550</if_sid>
+    <field name="file" type="pcre2">(?i)(Microsoft\.PowerShell_profile\.ps1|profile\.ps1)$</field>
+    <description>PowerShell profile script modified (possible persistence) | File: $(file) | User: $(uname)</description>
+    <group>fim_ps_profile,t1546.013,</group>
+    <mitre><id>T1546.013</id></mitre>
+  </rule>
+
+  <rule id="200617" level="12">
+    <if_sid>550</if_sid>
+    <field name="file" type="pcre2">(?i)ossec-agent\\ossec\.conf$</field>
+    <description>CRITICAL: Wazuh agent configuration file modified | File: $(file) | User: $(uname)</description>
+    <group>fim_wazuh_config,t1562.001,</group>
+    <mitre><id>T1562.001</id></mitre>
+  </rule>
+
+  <rule id="200618" level="9">
+    <if_sid>553</if_sid>
+    <description>FIM: Monitored file deleted | File: $(file) | User: $(uname)</description>
+    <group>fim_file_deleted,t1070.004,</group>
+    <mitre><id>T1070.004</id></mitre>
+  </rule>
+
+  <rule id="200619" level="12" frequency="20" timeframe="60">
+    <if_matched_sid>550</if_matched_sid>
+    <same_field>uname</same_field>
+    <description>CRITICAL: Mass file modification detected - possible ransomware | User: $(uname)</description>
+    <group>fim_ransomware_indicator,t1486,</group>
+    <mitre><id>T1486</id></mitre>
+  </rule>
+
+</group>

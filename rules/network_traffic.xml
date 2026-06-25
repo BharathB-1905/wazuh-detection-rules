@@ -1,0 +1,27 @@
+<group name="network_traffic,">
+
+  <rule id="200400" level="8">
+    <if_group>sysmon_event3</if_group>
+    <field name="win.eventdata.destinationPort" type="pcre2">^22$</field>
+    <description>SSH Connection Attempt | Process: $(win.eventdata.image) | Dest: $(win.eventdata.destinationIp)</description>
+    <group>network_ssh,t1021.004,</group>
+    <mitre><id>T1021.004</id></mitre>
+  </rule>
+
+  <rule id="200401" level="8">
+    <if_group>sysmon_event3</if_group>
+    <field name="win.eventdata.destinationPort" type="pcre2">^21$</field>
+    <description>FTP Connection Attempt | Process: $(win.eventdata.image) | Dest: $(win.eventdata.destinationIp)</description>
+    <group>network_ftp,t1071,</group>
+    <mitre><id>T1071</id></mitre>
+  </rule>
+
+  <rule id="200402" level="8">
+    <if_group>sysmon_event3</if_group>
+    <field name="win.eventdata.destinationPort" type="pcre2">^(25|465|587)$</field>
+    <description>SMTP Connection Attempt | Process: $(win.eventdata.image) | Dest: $(win.eventdata.destinationIp)</description>
+    <group>network_smtp,t1071,</group>
+    <mitre><id>T1071</id></mitre>
+  </rule>
+
+</group>

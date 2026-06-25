@@ -1,0 +1,88 @@
+<group name="task_service_detection,windows,">
+
+  <rule id="200300" level="9">
+    <if_sid>60103</if_sid>
+    <field name="win.system.eventID">^4698$</field>
+    <description>Scheduled task created | User: $(win.eventdata.subjectUserName) | Task: $(win.eventdata.taskName)</description>
+    <group>scheduled_task_created,t1053.005,</group>
+    <mitre><id>T1053.005</id></mitre>
+  </rule>
+
+  <rule id="200301" level="9">
+    <if_sid>60103</if_sid>
+    <field name="win.system.eventID">^4702$</field>
+    <description>Scheduled task modified | User: $(win.eventdata.subjectUserName) | Task: $(win.eventdata.taskName)</description>
+    <group>scheduled_task_modified,t1053.005,</group>
+    <mitre><id>T1053.005</id></mitre>
+  </rule>
+
+  <rule id="200302" level="7">
+    <if_sid>60103</if_sid>
+    <field name="win.system.eventID">^4699$</field>
+    <description>Scheduled task deleted | User: $(win.eventdata.subjectUserName) | Task: $(win.eventdata.taskName)</description>
+    <group>scheduled_task_deleted,t1053.005,</group>
+    <mitre><id>T1053.005</id></mitre>
+  </rule>
+
+  <rule id="200303" level="7">
+    <if_sid>60103</if_sid>
+    <field name="win.system.eventID">^4700$</field>
+    <description>Scheduled task enabled | User: $(win.eventdata.subjectUserName) | Task: $(win.eventdata.taskName)</description>
+    <group>scheduled_task_enabled,t1053.005,</group>
+    <mitre><id>T1053.005</id></mitre>
+  </rule>
+
+  <rule id="200304" level="12">
+    <if_sid>60103</if_sid>
+    <field name="win.system.eventID">^4698$</field>
+    <field name="win.eventdata.taskName" type="pcre2">(?i)(temp|tmp|update|svchost|winlogon|csrss|lsass|\\AppData|\\Temp|[a-z0-9]{16,})</field>
+    <description>CRITICAL: Suspicious scheduled task name | User: $(win.eventdata.subjectUserName) | Task: $(win.eventdata.taskName)</description>
+    <group>scheduled_task_suspicious,t1053.005,</group>
+    <mitre><id>T1053.005</id><id>T1036</id></mitre>
+  </rule>
+
+  <rule id="200305" level="9">
+    <if_sid>61100</if_sid>
+    <field name="win.system.eventID">^7045$</field>
+    <description>New Windows service installed | Service: $(win.eventdata.serviceName) | Path: $(win.eventdata.imageFile)</description>
+    <group>service_created,t1543.003,</group>
+    <mitre><id>T1543.003</id></mitre>
+  </rule>
+
+  <rule id="200306" level="12">
+    <if_sid>61100</if_sid>
+    <field name="win.system.eventID">^7045$</field>
+    <field name="win.eventdata.imageFile" type="pcre2">(?i)(\\Temp\\|\\AppData\\|\\Users\\Public\\|\\Downloads\\|\\ProgramData\\[^M])</field>
+    <description>CRITICAL: Service installed from suspicious path | Service: $(win.eventdata.serviceName) | Path: $(win.eventdata.imageFile)</description>
+    <group>service_suspicious_path,t1543.003,</group>
+    <mitre><id>T1543.003</id><id>T1036</id></mitre>
+  </rule>
+
+  <rule id="200307" level="12">
+    <if_sid>61100</if_sid>
+    <field name="win.system.eventID">^7045$</field>
+    <field name="win.eventdata.serviceType" type="pcre2">(?i)kernel\s+driver|file\s+system\s+driver</field>
+    <description>CRITICAL: Kernel/filesystem driver installed as service | Service: $(win.eventdata.serviceName) | Path: $(win.eventdata.imageFile)</description>
+    <group>service_kernel_driver,t1543.003,</group>
+    <mitre><id>T1543.003</id><id>T1215</id></mitre>
+  </rule>
+
+  <rule id="200308" level="9">
+    <if_sid>61100</if_sid>
+    <field name="win.system.eventID">^7040$</field>
+    <field name="win.eventdata.param2" type="pcre2">(?i)auto\s+start</field>
+    <description>Service startup changed to Auto-Start (persistence) | Service: $(win.eventdata.param1)</description>
+    <group>service_autostart,t1543.003,</group>
+    <mitre><id>T1543.003</id></mitre>
+  </rule>
+
+  <rule id="200309" level="12">
+    <if_sid>60103</if_sid>
+    <field name="win.system.eventID">^4698$</field>
+    <field name="win.eventdata.subjectUserName" type="pcre2">(?i)^(system|network service|local service|anonymous logon)$</field>
+    <description>CRITICAL: Scheduled task created by SYSTEM/service account | Account: $(win.eventdata.subjectUserName) | Task: $(win.eventdata.taskName)</description>
+    <group>scheduled_task_system,t1053.005,</group>
+    <mitre><id>T1053.005</id><id>T1078.003</id></mitre>
+  </rule>
+
+</group>
