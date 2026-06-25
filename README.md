@@ -222,7 +222,7 @@ Rules at level 12 cover: credential theft, PrintNightmare RCE, ransomware mass-m
 
 **Bharath B**  
 
-**Certifications:** CHFI · CompTIA Security+ · CCA-CNS (IIT Madras) · CSA1/CSA2 (Mile2) · Networking Basics (Cisco)
+**Certifications:** CHFI · CompTIA Security+ · CCA-CNS (IIT Madras) · CSA1/CSA2 (Mile2) · 
 
 ---
 
