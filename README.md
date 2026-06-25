@@ -24,12 +24,12 @@ wazuh-detection-rules/
 │
 ├── README.md
 ├── rules/
-│   ├── powershell_rules.xml       # Rules 200100–200109
+│   ├── fim_firewall_rules.xml     # Rules 200600–200619
 │   ├── network_rules.xml          # Rules 200200–200209
 │   ├── network_traffic.xml        # Rules 200400–200402
-│   ├── task_service_rules.xml     # Rules 200300–200309
-│   ├── fim_firewall_rules.xml     # Rules 200600–200619
-│   └── rdp_usb_print_rules.xml   # Rules 200700–200714
+│   ├── powershell_rules.xml       # Rules 200100–200109
+│   ├── rdp_usb_print_rules.xml    # Rules 200700–200714
+│   └── task_service_rules.xml     # Rules 200300–200309
 ├── docs/
 │   ├── MITRE_mapping.md
 │   └── deployment_guide.md
